@@ -15,6 +15,7 @@
 "lock_rssi" = "RSSI Sperren";
 "minute" = "Minute";
 "minutes" = "Minuten";
+"no_delay" = "Keine Verzögerung";
 "not_detected" = "Kein Signal entdeckt";
 "notification_device_away" = "Gerät ist entfernt";
 "notification_locked" = "Dieses Gerät wurde durch BLEUnlock gesperrt";

@@ -15,6 +15,7 @@
 "lock_rssi" = "ロック信号強度";
 "minute" = "分";
 "minutes" = "分";
+"no_delay" = "遅延なし";
 "not_detected" = "信号未検出";
 "notification_device_away" = "デバイスが Mac から離れました";
 "notification_locked" = "Mac は BLEUnlock によってロックされました";

@@ -15,6 +15,7 @@
 "lock_rssi" = "Lås RSSI";
 "minute" = "minut";
 "minutes" = "minutter";
+"no_delay" = "Ingen forsinkelse";
 "not_detected" = "Signal ikke fundet";
 "notification_device_away" = "Enheden er væk";
 "notification_locked" = "Denne computer er blevet låst af BLEUnlock";

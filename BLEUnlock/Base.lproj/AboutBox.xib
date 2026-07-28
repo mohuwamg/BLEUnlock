@@ -418,7 +418,7 @@ Included icons are derived from SVGs downloaded from materialdesignicons.com. Th
                             <action selector="visitHomepage:" target="-2" id="CbT-kI-JXI"/>
                         </connections>
                     </button>
-                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AHV-DJ-ucE">
+                    <button hidden="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AHV-DJ-ucE">
                         <rect key="frame" x="297" y="13" width="130" height="32"/>
                         <buttonCell key="cell" type="push" title="Check Releases" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="WIg-Gy-UeI">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -432,7 +432,7 @@ Included icons are derived from SVGs downloaded from materialdesignicons.com. Th
                 <constraints>
                     <constraint firstAttribute="bottom" secondItem="8gJ-J5-6Ty" secondAttribute="bottom" constant="20" id="4W1-i2-xLJ"/>
                     <constraint firstItem="xhw-xw-Rxl" firstAttribute="top" secondItem="V2H-IE-JRz" secondAttribute="bottom" constant="8" symbolic="YES" id="7Fy-ff-51Y"/>
-                    <constraint firstItem="8gJ-J5-6Ty" firstAttribute="leading" secondItem="4gT-J6-CkT" secondAttribute="leading" constant="80" id="7lb-Ln-gu4"/>
+                    <constraint firstItem="8gJ-J5-6Ty" firstAttribute="centerX" secondItem="4gT-J6-CkT" secondAttribute="centerX" id="7lb-Ln-gu4"/>
                     <constraint firstItem="zi4-VN-Z2O" firstAttribute="top" secondItem="xhw-xw-Rxl" secondAttribute="bottom" constant="8" id="8HG-jd-MwZ"/>
                     <constraint firstItem="gjb-oQ-i8x" firstAttribute="top" secondItem="4gT-J6-CkT" secondAttribute="top" constant="20" id="B4Q-6s-zvj"/>
                     <constraint firstItem="V2H-IE-JRz" firstAttribute="top" secondItem="gjb-oQ-i8x" secondAttribute="bottom" constant="8" id="DGq-Pa-GYO"/>

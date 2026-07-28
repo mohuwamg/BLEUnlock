@@ -13,7 +13,7 @@ func checkUpdate() {
 }
 
 private func doCheckUpdate() {
-    var request = URLRequest(url: URL(string: "https://api.github.com/repos/ts1/BLEUnlock/releases/latest")!)
+    var request = URLRequest(url: URL(string: "https://api.github.com/repos/mohuwamg/BLEUnlock/releases/latest")!)
     request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
     let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
         if let jsondata = data {

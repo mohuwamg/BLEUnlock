@@ -15,6 +15,7 @@
 "lock_rssi" = "Kilitleme RSSI değeri";
 "minute" = "dakika";
 "minutes" = "dakika";
+"no_delay" = "Gecikme Yok";
 "not_detected" = "Sinyal tespit edilemedi";
 "notification_device_away" = "Aygıt uzakta";
 "notification_locked" = "Bu bilgisayar BLEUnlock tarafından kilitlenmiştir";

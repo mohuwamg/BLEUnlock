@@ -1,7 +1,7 @@
 # BLEUnlock
 
-![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
-![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
+![CI](https://github.com/mohuwamg/BLEUnlock/workflows/CI/badge.svg)
+![Github All Releases](https://img.shields.io/github/downloads/mohuwamg/BLEUnlock/total.svg)
 [![Buy me a coffee](img/buymeacoffee.svg)](https://www.buymeacoffee.com/tsone)
 
 BLEUnlockはiPhone, Apple Watchやその他のBluetooth Low Energyデバイスの距離によってMacをロック・アンロックする小さなメニューバーユーティリティーです。
@@ -33,7 +33,7 @@ $ brew install bleunlock
 
 ### 手動でインストールする方法
 
-[Releases](https://github.com/ts1/BLEUnlock/releases)からzipファイルをダウンロードし、解凍してアプリケーションフォルダに移動します。
+[Releases](https://github.com/mohuwamg/BLEUnlock/releases)からzipファイルをダウンロードし、解凍してアプリケーションフォルダに移動します。
 
 ## セットアップ
 

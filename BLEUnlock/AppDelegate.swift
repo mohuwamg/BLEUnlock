@@ -159,7 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     func userNotificationCenter(_ center: NSUserNotificationCenter,
                                 didActivate notification: NSUserNotification) {
         if notification != userNotification {
-            NSWorkspace.shared.open(URL(string: "https://github.com/ts1/BLEUnlock/releases")!)
+            NSWorkspace.shared.open(URL(string: "https://github.com/mohuwamg/BLEUnlock/releases")!)
             NSUserNotificationCenter.default.removeDeliveredNotification(notification)
         }
     }
@@ -294,15 +294,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         guard !self.prefs.bool(forKey: "wakeWithoutUnlocking") else { return }
 
+        // On newer macOS the login window is often not ready to accept keystrokes the
+        // instant the display wakes, so a single fixed-delay attempt can silently miss.
+        // Poll and retry a few times, stopping as soon as the session is actually
+        // unlocked. (SecureEventInput may still block synthesized keystrokes entirely
+        // on some macOS versions; this only hardens the timing, not that limitation.)
+        attemptUnlock(retriesRemaining: 6)
+    }
+
+    func attemptUnlock(retriesRemaining: Int) {
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+            // Already unlocked (grace period, or a previous attempt succeeded): stop.
             guard self.isScreenLocked() else { return }
-            guard let password = self.fetchPassword(warn: true) else { return }
-            
-            print("Entering password")
+            // Preconditions may have changed while waiting for the login window.
+            guard !self.manualLock, self.ble.presence, !self.systemSleep, !self.displaySleep else { return }
+            // Only warn about a missing password on the first attempt to avoid repeated dialogs.
+            guard let password = self.fetchPassword(warn: retriesRemaining == 6) else { return }
+
+            print("Entering password (\(retriesRemaining) retries left)")
             self.unlockedAt = Date().timeIntervalSince1970
             self.fakeKeyStrokes(password)
-            self.playNowPlaying()
-            self.runScript("unlocked")
+
+            // Verify shortly after typing; if still locked, the login window may not have
+            // accepted the keystrokes yet, so retry until it does or we run out.
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
+                if self.isScreenLocked() && retriesRemaining > 0 {
+                    self.attemptUnlock(retriesRemaining: retriesRemaining - 1)
+                } else {
+                    self.playNowPlaying()
+                    self.runScript("unlocked")
+                }
+            })
         })
     }
 
@@ -600,6 +622,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let lockDelayItem = mainMenu.addItem(withTitle: t("lock_delay"), action: nil, keyEquivalent: "")
         lockDelayItem.submenu = lockDelayMenu
+        lockDelayMenu.addItem(withTitle: t("no_delay"), action: #selector(setLockDelay), keyEquivalent: "").tag = 0
         lockDelayMenu.addItem(withTitle: "2 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 2
         lockDelayMenu.addItem(withTitle: "5 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 5
         lockDelayMenu.addItem(withTitle: "15 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 15

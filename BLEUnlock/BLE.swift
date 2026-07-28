@@ -137,13 +137,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var thresholdRSSI = -70
     var latestRSSIs: [Double] = []
     var latestN: Int = 5
+    var minUnlockSamples: Int = 3
     var activeModeTimer : Timer? = nil
     var connectionTimer : Timer? = nil
 
     func scanForPeripherals() {
         guard !centralMgr.isScanning else { return }
         centralMgr.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-        //print("Start scanning")
+        print("Start scanning")
     }
 
     func startScanning() {
@@ -203,9 +204,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         switch central.state {
         case .poweredOn:
             print("Bluetooth powered on")
-            if activeModeTimer == nil {
-                scanForPeripherals()
-            }
+            // Recover cleanly after a Bluetooth power cycle: drop stale active-mode and
+            // connection timers (their peripheral reference is now invalid) and restart
+            // scanning so we don't get stuck showing only "Scanning".
+            activeModeTimer?.invalidate()
+            activeModeTimer = nil
+            connectionTimer?.invalidate()
+            connectionTimer = nil
+            scanForPeripherals()
             powerWarn = false
         case .poweredOff:
             print("Bluetooth powered off")
@@ -234,15 +240,21 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func updateMonitoredPeripheral(_ rssi: Int) {
         // print(String(format: "rssi: %d", rssi))
-        if rssi >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
-            print("Device is close")
-            presence = true
-            delegate?.updatePresence(presence: presence, reason: "close")
-            latestRSSIs.removeAll() // Avoid bouncing
-        }
-
+        // Smooth first so both the presence (unlock) and proximity (lock) decisions use
+        // the moving average instead of a single raw sample. A lone spurious strong
+        // reading (multipath reflection / advertising burst) must not unlock the Mac.
         let estimatedRSSI = getEstimatedRSSI(rssi: rssi)
         delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
+
+        // Gate the "close" transition (which triggers auto-unlock) on the smoothed RSSI
+        // AND a minimum number of collected samples, so a cold start with only 1-2
+        // readings cannot immediately unlock from across the room.
+        let unlockThreshold = (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI)
+        if !presence && estimatedRSSI >= unlockThreshold && latestRSSIs.count >= minUnlockSamples {
+            print("Device is close (avg \(estimatedRSSI)dBm over \(latestRSSIs.count) samples)")
+            presence = true
+            delegate?.updatePresence(presence: presence, reason: "close")
+        }
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
             if let timer = proximityTimer {
@@ -251,14 +263,22 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 proximityTimer = nil
             }
         } else if presence && proximityTimer == nil {
-            proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
-                print("Device is away")
-                self.presence = false
-                self.delegate?.updatePresence(presence: self.presence, reason: "away")
-                self.proximityTimer = nil
-            })
-            RunLoop.main.add(proximityTimer!, forMode: .common)
-            print("Proximity timer started")
+            if proximityTimeout <= 0 {
+                // "No Delay" is selected: lock immediately once the smoothed RSSI drops
+                // below the lock threshold, without arming the delay timer.
+                print("Device is away (no delay)")
+                presence = false
+                delegate?.updatePresence(presence: presence, reason: "away")
+            } else {
+                proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
+                    print("Device is away")
+                    self.presence = false
+                    self.delegate?.updatePresence(presence: self.presence, reason: "away")
+                    self.proximityTimer = nil
+                })
+                RunLoop.main.add(proximityTimer!, forMode: .common)
+                print("Proximity timer started")
+            }
         }
         resetSignalTimer()
     }
@@ -362,6 +382,45 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             connectionTimer?.invalidate()
             connectionTimer = nil
             peripheral.readRSSI()
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didDisconnectPeripheral peripheral: CBPeripheral,
+                        error: Error?)
+    {
+        guard peripheral == monitoredPeripheral else { return }
+        if let error = error {
+            print("Monitored peripheral disconnected: \(error.localizedDescription)")
+        } else {
+            print("Monitored peripheral disconnected")
+        }
+        // Clear stale connection/active-mode timers and fall back to scanning so a
+        // dropped link (e.g. the phone locking its screen) recovers on its own
+        // instead of getting stuck.
+        connectionTimer?.invalidate()
+        connectionTimer = nil
+        activeModeTimer?.invalidate()
+        activeModeTimer = nil
+        if !passiveMode {
+            scanForPeripherals()
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didFailToConnect peripheral: CBPeripheral,
+                        error: Error?)
+    {
+        guard peripheral == monitoredPeripheral else { return }
+        if let error = error {
+            print("Failed to connect to monitored peripheral: \(error.localizedDescription)")
+        } else {
+            print("Failed to connect to monitored peripheral")
+        }
+        connectionTimer?.invalidate()
+        connectionTimer = nil
+        if !passiveMode {
+            scanForPeripherals()
         }
     }
 

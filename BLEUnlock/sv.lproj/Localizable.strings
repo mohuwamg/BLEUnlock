@@ -15,6 +15,7 @@
 "lock_rssi" = "Lås RSSI";
 "minute" = "minut";
 "minutes" = "minuter";
+"no_delay" = "Ingen fördröjning";
 "not_detected" = "Ingen enhet upptäcktes";
 "notification_device_away" = "Enheten är borta";
 "notification_locked" = "Den här datorn har låsts av BLEUnlock";

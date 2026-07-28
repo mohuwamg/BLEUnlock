@@ -15,6 +15,7 @@
 "lock_rssi" = "锁定 RSSI";
 "minute" = "分钟";
 "minutes" = "分钟";
+"no_delay" = "不延迟";
 "not_detected" = "未检测到信息";
 "notification_device_away" = "设备掉线";
 "notification_locked" = "本电脑已被BLEUnlock锁定";

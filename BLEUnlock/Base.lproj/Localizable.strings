@@ -15,6 +15,7 @@
 "lock_rssi" = "Lock RSSI";
 "minute" = "minute";
 "minutes" = "minutes";
+"no_delay" = "No Delay";
 "not_detected" = "Signal not detected";
 "notification_device_away" = "Device is away";
 "notification_locked" = "This computer has been locked by BLEUnlock";
